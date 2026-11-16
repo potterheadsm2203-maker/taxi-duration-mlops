@@ -1,3 +1,5 @@
+import mlflow
+import mlflow.sklearn
 import pandas as pd
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
@@ -21,20 +23,25 @@ def rmse(y_true, y_pred):
 
 
 def main():
+    mlflow.set_tracking_uri("sqlite:///mlflow.db")
+    mlflow.set_experiment("taxi-duration")
+
     train = load(TRAIN_PATH)
     val = load(VAL_PATH)
     X_val, y_val = val[FEATURES], val["duration"]
-
     lr = LinearRegression().fit(train[FEATURES], train["duration"])
     print("Linear regression RMSE:", rmse(y_val, lr.predict(X_val)))
 
     sample = train.sample(300_000, random_state=42)
-    rf = RandomForestRegressor(
-        n_estimators=50, max_depth=15, n_jobs=-1, random_state=42
-    )
-    rf.fit(sample[FEATURES], sample["duration"])
-    print("Random forest RMSE:", rmse(y_val, rf.predict(X_val)))
-
+    with mlflow.start_run():
+        mlflow.log_param("max_depth", 15)
+        rf = RandomForestRegressor(
+            n_estimators=50, max_depth=15, n_jobs=-1, random_state=42
+        )
+        rf.fit(sample[FEATURES], sample["duration"])
+        score = rmse(y_val, rf.predict(X_val))
+        mlflow.log_metric("rmse", score)
+        print("Random forest RMSE:", score)
 
 if __name__ == "__main__":
     main()
