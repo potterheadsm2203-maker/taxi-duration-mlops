@@ -33,7 +33,7 @@ def main():
     print("Linear regression RMSE:", rmse(y_val, lr.predict(X_val)))
 
     sample = train.sample(300_000, random_state=42)
-        with mlflow.start_run():
+    with mlflow.start_run():
         mlflow.log_params({
             "n_estimators": 50,
             "max_depth": 15,
