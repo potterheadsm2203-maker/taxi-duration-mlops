@@ -29,6 +29,7 @@ def main():
     train = load(TRAIN_PATH)
     val = load(VAL_PATH)
     X_val, y_val = val[FEATURES], val["duration"]
+
     lr = LinearRegression().fit(train[FEATURES], train["duration"])
     print("Linear regression RMSE:", rmse(y_val, lr.predict(X_val)))
 
