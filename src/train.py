@@ -33,21 +33,25 @@ def main():
     print("Linear regression RMSE:", rmse(y_val, lr.predict(X_val)))
 
     sample = train.sample(300_000, random_state=42)
-    with mlflow.start_run():
+        with mlflow.start_run():
         mlflow.log_params({
-    "n_estimators": 50,
-    "max_depth": 15,
-    "sample_size": 300_000,
-})
-
+            "n_estimators": 50,
+            "max_depth": 15,
+            "sample_size": 300_000,
+        })
         rf = RandomForestRegressor(
             n_estimators=50, max_depth=15, n_jobs=-1, random_state=42
         )
         rf.fit(sample[FEATURES], sample["duration"])
         score = rmse(y_val, rf.predict(X_val))
         mlflow.log_metric("rmse", score)
-       mlflow.sklearn.log_model(rf, name="model")
+        mlflow.sklearn.log_model(
+            rf,
+            name="model",
+            input_example=sample[FEATURES].head(5),
+        )
         print("Random forest RMSE:", score)
+
 
 if __name__ == "__main__":
     main()
